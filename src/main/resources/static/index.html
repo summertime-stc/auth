@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+	function getData(){
+		var a={name:$("#name").val()};
+		 $.ajax({   
+				type : "POST",
+				url : "http://localhost:8093/stc/ajaxReq3",
+				//data :{a1:JSON.stringify(a)},
+				//data :{a1:$("#name").val()},
+				data :{a1:$("#name").val(),a2:"aa"},
+				dataType : "json",
+				success : function(data){
+					//console.log(data);//后台json数据对象
+					console.log(data.name);
+
+					$("#h1").html(data.name);
+					//alert(data.name);
+					//alert("成功获取");
+					//console.log(JSON.stringify(data)); //后台json数据转换为jsonStr
+				},
+				error: function (XMLHttpRequest, textStatus, errorThrown) {
+				    //alert(XMLHttpRequest.status);
+				    //alert(XMLHttpRequest.readyState);
+				    alert(textStatus + "ajax出错了");
+				}
+	 
+			}); 
+		
+	}
+
+</script>
+</head>
+<body>
+	<input type="text" id="name" name="name"/>
+	<button type="button" onclick="getData()">Click Me!</button>
+	<h1 id="h1"></h1>	
+</body>
+</html>

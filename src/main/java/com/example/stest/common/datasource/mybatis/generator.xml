@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+  <classPathEntry location="E:\Jar\ojdbc14-10.2.0.2.jar" />
+
+  <context id="Mysql2Tables" targetRuntime="MyBatis3">
+   	<!-- 生成的实体Bean,将实现Serializable -->
+    <plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>
+    
+    <commentGenerator>
+        <!-- 是否去除自动生成的注释 true:是 ; false:否 -->
+        <property name="suppressAllComments" value="true" />
+    </commentGenerator>
+    
+	<!-- jdbcConnection:连接数据库 -->
+    <jdbcConnection driverClass="oracle.jdbc.OracleDriver"
+        connectionURL="jdbc:oracle:thin:@10.1.94.91:1521:HSBP"
+        userId="MDM"
+        password="MDM">
+    </jdbcConnection>
+    
+	<!-- 默认false,把JDBC DECIMAL和 NUMERIC 类型解析为 Integer true,把JDBC DECIMAL和 NUMERIC类型解析为java.math.BigDecimal -->
+	<!-- 使用默认格式转换文件，将smallint转换为Integer -->
+    <javaTypeResolver type="com.wonder.hsbp.common.datasource.mybatis.MyJavaTypeResolver">
+    </javaTypeResolver>
+<!-- 随文件位置修改 -->
+    <!-- 对应的实体类文件-->
+    <javaModelGenerator targetPackage="com.wonder.hsbp.mdm.fee.catalog.domain" targetProject="src/main/java">
+      <property name="enableSubPackages" value="true" />
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator> 
+    <!--对应的mapper.xml文件 -->
+    <sqlMapGenerator targetPackage="mybatis.mapper"  targetProject="src/main/resources">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+<!-- 随文件位置修改 -->
+    <!-- 对应的Mapper接口类文件-->
+    <javaClientGenerator type="XMLMAPPER"  targetPackage="com.wonder.hsbp.mdm.fee.catalog.repository"  targetProject="src/main/java">
+        <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+<!-- 随表修改 -->
+    <!-- 数据表与Bean的映射 -->
+    <table tableName="DIC_FEE_CLASSIFY"  enableCountByExample="false" enableUpdateByExample="false"
+           enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false">
+           <!-- 生成的insert 返回主键 -->
+           <generatedKey  type="pre"  column="id" sqlStatement="select SEQ_DIC_FEE_CLASSIFY.NEXTVAL from dual"></generatedKey>
+    </table>
+        
+  </context>
+</generatorConfiguration>
