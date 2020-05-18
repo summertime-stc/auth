@@ -1,9 +1,9 @@
 package com.example.stest.analysis.interceptor;
 
 import com.example.stest.analysis.test.dao.TestDao;
-import com.example.stest.analysis.util.IpandAddr.IpAndAddrUtil;
 import com.example.stest.analysis.util.encryption.Encryption;
 import com.example.stest.analysis.util.redis.RedisUtils;
+import com.example.stest.common.controller.ResultBase;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+
+import static com.example.stest.common.codeEnum.ServiceExceptionCodeEnum.*;
 
 @Slf4j
 public class Verifyinterceptor implements HandlerInterceptor {
@@ -32,10 +34,7 @@ public class Verifyinterceptor implements HandlerInterceptor {
         String sign=request.getParameter("sign");
         if (StringUtils.isEmpty(timestamp)||StringUtils.isBlank(timestamp)){
             log.info("timestamp时间戳不能为空");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","timestamp时间戳不能为空");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(TIMESTAMP.getCode(),TIMESTAMP.getMessage()));
             return false;
         }
 
@@ -45,50 +44,35 @@ public class Verifyinterceptor implements HandlerInterceptor {
             rqtime=Long.valueOf(timestamp);
         }catch (Exception e){
             log.info("timestamp入参不合法");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","timestamp入参不合法");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(ILLEGALTIMESTAMP.getCode(),ILLEGALTIMESTAMP.getMessage()));
             return false;
         }
         Long crtime=System.currentTimeMillis();
         log.info("sss"+(crtime-rqtime));
         if (crtime-rqtime>10*1000*60) {
             log.info("请求已过期");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","请求已过期");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(REQUESTTIMEOUT.getCode(),REQUESTTIMEOUT.getMessage()));
             return false;
         }
 
         if (StringUtils.isEmpty(appid)||StringUtils.isBlank(appid)){
             log.info("appid授权号不能为空");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","appid授权号不能为空");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(APPIDNOTNULL.getCode(),APPIDNOTNULL.getMessage()));
             return false;
         }
 
         appid= Encryption.deAesCode(appid,"AAAAAAAAAAAAAAAA");
         if (appid==null){
             log.info("appid入参不合法");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","appid入参不合法");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(ILLEGALAPPID.getCode(),ILLEGALAPPID.getMessage()));
             return false;
         }
 
         //验证sign
-        String signauth= Encryption.encrytMD5(IpAndAddrUtil.getIp(request)+appid+rqtime,"123456");
+        String signauth= Encryption.encrytMD5(appid+rqtime,"123456");
         if (!signauth.equals(sign)){
             log.info("sign认证错误");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","sign认证错误！");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(SIGNVALIDATIONERROR.getCode(),SIGNVALIDATIONERROR.getMessage()));
             return false;
         }
 
@@ -96,10 +80,7 @@ public class Verifyinterceptor implements HandlerInterceptor {
         redisUtils.selectDB(3);
         if(redisUtils.hasKey(sign)){
             log.info("重复请求");
-            JSONObject jsonObject=new JSONObject();
-            jsonObject.put("code","500");
-            jsonObject.put("message","重复请求！");
-            returnJson(response,jsonObject.toString());
+            returnJson(response,ResultBase.error(RESUBMITREQUEST.getCode(),RESUBMITREQUEST.getMessage()));
             return false;
         }
         else{
@@ -118,10 +99,7 @@ public class Verifyinterceptor implements HandlerInterceptor {
             }
             else{
                 log.info("无该接口访问权限");
-                JSONObject jsonObject=new JSONObject();
-                jsonObject.put("code","500");
-                jsonObject.put("message","appid无该接口访问权限");
-                returnJson(response,jsonObject.toString());
+                returnJson(response,ResultBase.error(PERMISSIONDENIED.getCode(),PERMISSIONDENIED.getMessage()));
                 return false;
             }
         }
@@ -137,6 +115,23 @@ public class Verifyinterceptor implements HandlerInterceptor {
         try {
             writer = response.getWriter();
             writer.print(json);
+        } catch (IOException e) {
+            log.error("response error",e);
+        } finally {
+            if (writer != null)
+                writer.close();
+        }
+    }
+
+    //返回前端
+    private void returnJson(HttpServletResponse response, Object obj) throws Exception{
+        PrintWriter writer = null;
+        JSONObject json=JSONObject.fromObject(obj);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=utf-8");
+        try {
+            writer = response.getWriter();
+            writer.print(json.toString());
         } catch (IOException e) {
             log.error("response error",e);
         } finally {

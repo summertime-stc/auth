@@ -58,7 +58,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         if (!ip.equals(IpAndAddrUtil.getIp(request))){
-            log.info("rookie被劫持");
+            log.info("ip异常");
             response.sendRedirect(LOGINPATH);
             return false;
         }

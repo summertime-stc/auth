@@ -6,8 +6,10 @@ import com.example.stest.analysis.test.dao.TestDao;
 import com.example.stest.analysis.test.domain.User;
 import com.example.stest.analysis.util.IpandAddr.IpAndAddrUtil;
 import com.example.stest.analysis.util.encryption.Encryption;
+import com.example.stest.analysis.util.error.ErrorUtil;
 import com.example.stest.analysis.util.redis.RedisUtils;
 import com.example.stest.common.controller.BaseController;
+import com.example.stest.common.controller.ResultBase;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -134,38 +136,57 @@ public class TestController extends BaseController {
     //事务
     @Transactional
     @ResponseBody
-    public String test1(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
-        System.out.println("hello1");
-        return "成功";
+    public ResultBase test1(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
+        try{
+            System.out.println("hello1");
+            return ResultBase.success("访问接口成功");
+        }
+        catch (ErrorUtil e){
+            return ResultBase.error("500",e.getMessage());
+        }
     }
 
     @ApiOperation(value = "d2")
     @PostMapping("/test2")
     @ResponseBody
-    public String test2(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
-        System.out.println("hello2");
-        return "成功";
+    public ResultBase test2(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
+        try{
+            System.out.println("hello2");
+            return ResultBase.success("访问接口成功");
+        }
+        catch (ErrorUtil e){
+            return ResultBase.error("500",e.getMessage());
+        }
     }
 
     @ApiOperation(value = "d3")
     @PostMapping("/test3")
     @ResponseBody
-    public String test3(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
-        System.out.println("hello3");
-        return "成功";
+    public ResultBase test3(@RequestParam(value = "appid") String appid,@RequestParam(value = "timestamp") String timestamp,@RequestParam(value = "sign") String sign){
+        try{
+            System.out.println("hello3");
+            return ResultBase.success("访问接口成功");
+        }
+        catch (ErrorUtil e){
+            return ResultBase.error("500",e.getMessage());
+        }
     }
 
     @ApiOperation(value = "加密")
     @PostMapping("/encrypt")
     @ResponseBody
-    public String encrypt(HttpServletRequest request){
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("appid",Encryption.enAesCode("STCASD","AAAAAAAAAAAAAAAA"));
-        Long time=System.currentTimeMillis();
-        jsonObject.put("timestamp",Encryption.enAesCode(String.valueOf(time),"AAAAAAAAAAAAAAAA"));
-        String sign= IpAndAddrUtil.getIp(request)+"STCASD"+time;
-        jsonObject.put("sign",Encryption.encrytMD5(sign,"123456"));
-        return jsonObject.toString();
+    public ResultBase encrypt(HttpServletRequest request){
+        try{
+            JSONObject jsonObject=new JSONObject();
+            jsonObject.put("appid",Encryption.enAesCode("STCASD","AAAAAAAAAAAAAAAA"));
+            Long time=System.currentTimeMillis();
+            jsonObject.put("timestamp",Encryption.enAesCode(String.valueOf(time),"AAAAAAAAAAAAAAAA"));
+            String sign="STCASD"+time;
+            jsonObject.put("sign",Encryption.encrytMD5(sign,"123456"));
+            return ResultBase.success(jsonObject);
+        }
+        catch (ErrorUtil e){
+            return ResultBase.error("500",e.getMessage());
+        }
     }
-
 }
